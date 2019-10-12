@@ -1,3 +1,6 @@
+use std::iter::Peekable;
+use std::str::Chars;
+
 pub fn run_prompt() -> Result<(), String> {
     println!("Implement REPL");
     Ok(())
@@ -63,6 +66,30 @@ impl Token {
             token_type,
             lexeme,
             line,
+        }
+    }
+}
+
+struct Scanner<'a> {
+    source: &'a String,
+    reader: Peekable<Chars<'a>>,
+    tokens: Vec<Token>,
+    start: usize,
+    current: usize,
+    line: usize,
+}
+
+impl<'a> Scanner<'a> {
+    fn new(source: &'a String) -> Scanner<'a> {
+        let reader = source.chars().peekable();
+
+        Scanner {
+            source,
+            reader,
+            tokens: Vec::new(),
+            start: 0,
+            current: 0,
+            line: 1,
         }
     }
 }
