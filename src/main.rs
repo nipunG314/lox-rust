@@ -2,6 +2,8 @@ use std::env;
 use std::fs;
 use std::io::ErrorKind;
 
+mod error;
+
 fn run_prompt() -> Result<(), String> {
     Ok(())
 }
