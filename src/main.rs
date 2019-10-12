@@ -11,7 +11,7 @@ fn main() {
     let exit_output = match args.len() {
         1 => core::run_prompt(),
         2 => match fs::read_to_string(&args[1]) {
-            Ok(_) => core::run_file(&args[1]),
+            Ok(source) => core::run_file(source),
             Err(err) => match err.kind() {
                 ErrorKind::NotFound => Err(String::from("File not found.")),
                 ErrorKind::PermissionDenied => Err(String::from("Permission denied.")),

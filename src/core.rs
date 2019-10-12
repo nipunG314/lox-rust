@@ -3,7 +3,7 @@ pub fn run_prompt() -> Result<(), String> {
     Ok(())
 }
 
-pub fn run_file(file: &String) -> Result<(), String> {
+pub fn run_file(source: String) -> Result<(), String> {
     println!("Scan and print Tokens");
     Ok(())
 }
