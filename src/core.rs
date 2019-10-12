@@ -1,14 +1,12 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
-pub fn run_prompt() -> Result<(), String> {
+pub fn run_prompt() {
     println!("Implement REPL");
-    Ok(())
 }
 
-pub fn run_file(source: String) -> Result<(), String> {
+pub fn run_file(source: String) {
     println!("Scan and print Tokens");
-    Ok(())
 }
 
 #[derive(Debug)]
