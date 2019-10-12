@@ -93,6 +93,25 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    fn advance(&mut self) -> Option<char> {
+        self.current += 1;
+        self.reader.next()
+    }
+
+    fn check_next_symbol<T>(&mut self, f: T) -> Option<bool>
+    where
+        T: Fn(char) -> bool,
+    {
+        if let Some(c) = self.reader.peek() {
+            if f(*c) {
+                return Some(true);
+            } else {
+                return Some(false);
+            }
+        }
+        None
+    }
+
     fn add_token(&mut self, token_type: TokenType) {
         let text = self
             .source
@@ -101,10 +120,5 @@ impl<'a> Scanner<'a> {
             .take(self.current - self.start)
             .collect::<String>();
         self.tokens.push(Token::new(token_type, text, self.line));
-    }
-
-    fn advance(&mut self) -> Option<char> {
-        self.current += 1;
-        self.reader.next()
     }
 }
