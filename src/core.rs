@@ -56,12 +56,12 @@ enum TokenType {
 #[derive(Debug)]
 struct Token {
     token_type: TokenType,
-    lexeme: &'static str,
+    lexeme: String,
     line: usize,
 }
 
 impl Token {
-    fn new(token_type: TokenType, lexeme: &'static str, line: usize) -> Token {
+    fn new(token_type: TokenType, lexeme: String, line: usize) -> Token {
         Token {
             token_type,
             lexeme,
@@ -91,5 +91,20 @@ impl<'a> Scanner<'a> {
             current: 0,
             line: 1,
         }
+    }
+
+    fn add_token(&mut self, token_type: TokenType) {
+        let text = self
+            .source
+            .chars()
+            .skip(self.start)
+            .take(self.current - self.start)
+            .collect::<String>();
+        self.tokens.push(Token::new(token_type, text, self.line));
+    }
+
+    fn advance(&mut self) -> Option<char> {
+        self.current += 1;
+        self.reader.next()
     }
 }
