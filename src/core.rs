@@ -68,6 +68,8 @@ impl Token {
     }
 }
 
+struct NextTokenInfo(char, TokenType, TokenType);
+
 struct Scanner<'a> {
     source: &'a String,
     reader: Peekable<Chars<'a>>,
@@ -120,5 +122,14 @@ impl<'a> Scanner<'a> {
             .take(self.current - self.start)
             .collect::<String>();
         self.tokens.push(Token::new(token_type, text, self.line));
+    }
+
+    fn add_next_token(&mut self, next_token: NextTokenInfo) {
+        let NextTokenInfo(expected, token_type1, token_type2) = next_token;
+        if let Some(true) = self.check_next_symbol(|c| c == expected) {
+            self.add_token(token_type1);
+        } else {
+            self.add_token(token_type2);
+        }
     }
 }
