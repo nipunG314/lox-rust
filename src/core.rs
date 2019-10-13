@@ -135,6 +135,12 @@ impl<'a> Scanner<'a> {
             '\n' => {
                 self.line += 1;
             }
+            '"' => {
+                let new_string = self.make_string();
+                if let Some(s) = new_string {
+                    self.add_token(s);
+                }
+            }
             _ => error::error(self.line, "Unexpected character."),
         }
     }
