@@ -1,3 +1,4 @@
+use crate::error;
 use std::iter::Peekable;
 use std::str::Chars;
 
@@ -90,6 +91,41 @@ impl<'a> Scanner<'a> {
             start: 0,
             current: 0,
             line: 1,
+        }
+    }
+
+    fn scan_token(&mut self) {
+        use TokenType::*;
+
+        match self.advance().unwrap() {
+            '(' => self.add_token(LeftParen),
+            ')' => self.add_token(RightParen),
+            '{' => self.add_token(LeftBrace),
+            '}' => self.add_token(RightBrace),
+            ',' => self.add_token(Comma),
+            '.' => self.add_token(Dot),
+            '-' => self.add_token(Minus),
+            '+' => self.add_token(Plus),
+            ';' => self.add_token(SemiColon),
+            '*' => self.add_token(Star),
+            '!' => self.add_next_token(NextTokenInfo('=', BangEqual, Bang)),
+            '=' => self.add_next_token(NextTokenInfo('=', EqualEqual, Equal)),
+            '<' => self.add_next_token(NextTokenInfo('=', LessEqual, Less)),
+            '>' => self.add_next_token(NextTokenInfo('=', GreaterEqual, Greater)),
+            '/' => match self.check_next_symbol(|c| c == '/') {
+                None => error::error(self.line, "Unexpected character."),
+                Some(false) => self.add_token(Slash),
+                Some(true) => {
+                    while let Some(false) = self.check_next_symbol(|c| c == '\n') {
+                        self.advance();
+                    }
+                }
+            },
+            ' ' | '\r' | '\t' => (),
+            '\n' => {
+                self.line += 1;
+            }
+            _ => error::error(self.line, "Unexpected character."),
         }
     }
 
