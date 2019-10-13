@@ -96,12 +96,14 @@ impl<'a> Scanner<'a> {
         self.reader.next()
     }
 
+    // Checks the next symbol and if it satisfies a closure, consumes it
     fn check_next_symbol<T>(&mut self, f: T) -> Option<bool>
     where
         T: Fn(char) -> bool,
     {
         if let Some(c) = self.reader.peek() {
             if f(*c) {
+                self.advance();
                 return Some(true);
             } else {
                 return Some(false);
