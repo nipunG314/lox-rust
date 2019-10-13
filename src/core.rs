@@ -128,6 +128,7 @@ impl<'a> Scanner<'a> {
                     while let Some(false) = self.check_next_symbol(|c| c == '\n') {
                         self.advance();
                     }
+                    self.line += 1;
                 }
             },
             ' ' | '\r' | '\t' => (),
