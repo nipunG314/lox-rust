@@ -147,6 +147,9 @@ impl<'a> Scanner<'a> {
                     if let Some(num) = new_number {
                         self.add_token(num);
                     }
+                } else if c.is_alphabetic() || c == '_' {
+                    let new_id = self.make_identifier();
+                    self.add_token(new_id);
                 } else {
                     error::error(self.line, "Unexpected character.");
                 }
@@ -265,5 +268,36 @@ impl<'a> Scanner<'a> {
         let literal_value: f64 = literal_value.parse().unwrap();
 
         Some(TokenType::Number(literal_value))
+    }
+
+    fn make_identifier(&mut self) -> TokenType {
+        while let Some(true) = self.check_next_symbol(|c| c.is_alphanumeric() || c == '_') {}
+
+        let literal_value = self
+            .source
+            .chars()
+            .skip(self.start)
+            .take((self.current) - (self.start))
+            .collect::<String>();
+
+        match literal_value.as_ref() {
+            "and" => TokenType::And,
+            "class" => TokenType::Class,
+            "else" => TokenType::Else,
+            "false" => TokenType::False,
+            "for" => TokenType::For,
+            "fun" => TokenType::Fun,
+            "if" => TokenType::If,
+            "nil" => TokenType::Nil,
+            "or" => TokenType::Or,
+            "print" => TokenType::Print,
+            "return" => TokenType::Return,
+            "super" => TokenType::Super,
+            "this" => TokenType::This,
+            "true" => TokenType::True,
+            "var" => TokenType::Var,
+            "while" => TokenType::While,
+            _ => TokenType::Identifier,
+        }
     }
 }
