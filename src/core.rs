@@ -7,7 +7,9 @@ pub fn run_prompt() {
 }
 
 pub fn run_file(source: String) {
-    println!("Scan and print Tokens");
+    let mut scanner = Scanner::new(&source);
+    scanner.scan_tokens();
+    println!("{:#?}", scanner.tokens);
 }
 
 #[derive(Debug)]
@@ -91,6 +93,13 @@ impl<'a> Scanner<'a> {
             start: 0,
             current: 0,
             line: 1,
+        }
+    }
+
+    fn scan_tokens(&mut self) {
+        while let Some(_) = self.reader.peek() {
+            self.start = self.current;
+            self.scan_token();
         }
     }
 
