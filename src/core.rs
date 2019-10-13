@@ -223,4 +223,38 @@ impl<'a> Scanner<'a> {
 
         Some(TokenType::Str(literal_value))
     }
+
+    fn make_number(&mut self) -> Option<TokenType> {
+        loop {
+            match self.check_next_symbol(|c| c.is_digit(10)) {
+                Some(false) => {
+                    if let Some(true) = self.check_next_symbol(|c| c == '.') {
+                        if let Some(false) | None = self.check_next_symbol(|c| c.is_digit(10)) {
+                            error::error(self.line, "Number cannot end with '.' operator");
+                            return None;
+                        }
+                        while let Some(true) = self.check_next_symbol(|c| c.is_digit(10)) {}
+                    }
+                    break;
+                }
+                Some(true) => {
+                    continue;
+                }
+                None => {
+                    break;
+                }
+            }
+        }
+
+        let literal_value = self
+            .source
+            .chars()
+            .skip(self.start)
+            .take((self.current) - (self.start))
+            .collect::<String>();
+
+        let literal_value: f64 = literal_value.parse().unwrap();
+
+        Some(TokenType::Number(literal_value))
+    }
 }
