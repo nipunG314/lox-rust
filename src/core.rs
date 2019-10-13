@@ -113,7 +113,7 @@ impl<'a> Scanner<'a> {
             '<' => self.add_next_token(NextTokenInfo('=', LessEqual, Less)),
             '>' => self.add_next_token(NextTokenInfo('=', GreaterEqual, Greater)),
             '/' => match self.check_next_symbol(|c| c == '/') {
-                None => error::error(self.line, "Unexpected character."),
+                None => error::error(self.line, "Unexpected EOF"),
                 Some(false) => self.add_token(Slash),
                 Some(true) => {
                     while let Some(false) = self.check_next_symbol(|c| c == '\n') {
