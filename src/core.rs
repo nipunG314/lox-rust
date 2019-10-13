@@ -178,4 +178,33 @@ impl<'a> Scanner<'a> {
             self.add_token(token_type2);
         }
     }
+
+    fn make_string(&mut self) -> Option<TokenType> {
+        loop {
+            match self.check_next_symbol(|c| c == '"') {
+                None => {
+                    error::error(self.line, "Unterminated string.");
+                    return None;
+                }
+                Some(false) => {
+                    if let Some(true) = self.check_next_symbol(|c| c == '\n') {
+                        self.line += 1;
+                    }
+                    self.advance();
+                }
+                Some(true) => {
+                    break;
+                }
+            }
+        }
+
+        let literal_value = self
+            .source
+            .chars()
+            .skip(self.start + 1)
+            .take((self.current - 1) - (self.start + 1))
+            .collect::<String>();
+
+        Some(TokenType::Str(literal_value))
+    }
 }
