@@ -141,7 +141,16 @@ impl<'a> Scanner<'a> {
                     self.add_token(s);
                 }
             }
-            _ => error::error(self.line, "Unexpected character."),
+            c => {
+                if c.is_digit(10) {
+                    let new_number = self.make_number();
+                    if let Some(num) = new_number {
+                        self.add_token(num);
+                    }
+                } else {
+                    error::error(self.line, "Unexpected character.");
+                }
+            }
         }
     }
 
