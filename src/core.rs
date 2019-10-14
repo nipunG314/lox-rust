@@ -70,12 +70,12 @@ pub struct NextTokenInfo(pub char, pub TokenType, pub TokenType);
 pub trait Expr: fmt::Display {}
 
 macro_rules! expr {
-    ($trt:ident: $e:ident<$T:ident> => $($field:ident: $ty:ident),*) => {
-        pub struct $e<$T: $trt> {
+    ($trt:ident: $e:ident<$($T:ident),+> => $($field:ident: $ty:ident),*) => {
+        pub struct $e<$($T: $trt,)+> {
             $(pub $field: $ty,)*
         }
 
-        impl<$T> $trt for $e<$T> where $T: $trt {}
+        impl<$($T,)+> $trt for $e<$($T,)+> where $($T: $trt,)+ {}
     };
     ($trt:ident: $e:ident => $($field:ident: $ty:ident),*) => {
         pub struct $e {
@@ -86,11 +86,12 @@ macro_rules! expr {
     };
 }
 
-expr!(Expr: Binary<T> => left: T, op: Token, right: T);
+expr!(Expr: Binary<T, U> => left: T, op: Token, right: U);
 
-impl<T> fmt::Display for Binary<T>
+impl<T, U> fmt::Display for Binary<T, U>
 where
     T: Expr,
+    U: Expr,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({} {} {})", self.op, self.left, self.right)
