@@ -67,73 +67,48 @@ impl fmt::Display for Token {
 
 pub struct NextTokenInfo(pub char, pub TokenType, pub TokenType);
 
-trait Expr: fmt::Display {}
+pub trait Expr: fmt::Display {}
 
-struct Binary<T>
-where
-    T: Expr,
-{
-    left: T,
-    op: Token,
-    right: T,
+macro_rules! expr {
+    ($trt:ident: $e:ident<$T:ident> => $($field:ident: $ty:ident),*) => {
+        pub struct $e<$T: $trt> {
+            $(pub $field: $ty,)*
+        }
+
+        impl<$T> $trt for $e<$T> where $T: $trt {}
+    };
+    ($trt:ident: $e:ident => $($field:ident: $ty:ident),*) => {
+        pub struct $e {
+            $(pub $field: $ty,)*
+        }
+
+        impl $trt for $e {}
+    };
 }
 
-impl<T> Binary<T>
-where
-    T: Expr,
-{
-    fn new(left: T, op: Token, right: T) -> Binary<T> {
-        Binary { left, op, right }
-    }
-}
+expr!(Expr: Binary<T> => left: T, op: Token, right: T);
 
 impl<T> fmt::Display for Binary<T>
 where
     T: Expr,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} {} {}", self.left, self.op, self.right)
+        write!(f, "({} {} {})", self.op, self.left, self.right)
     }
 }
 
-impl<T> Expr for Binary<T> where T: Expr {}
-
-struct Grouping<T>
-where
-    T: Expr,
-{
-    expression: T,
-}
-
-impl<T> Grouping<T>
-where
-    T: Expr,
-{
-    fn new(expression: T) -> Grouping<T> {
-        Grouping { expression }
-    }
-}
+expr!(Expr: Grouping<T> => expression: T);
 
 impl<T> fmt::Display for Grouping<T>
 where
     T: Expr,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "({})", self.expression)
+        write!(f, "(group {})", self.expression)
     }
 }
 
-impl<T> Expr for Grouping<T> where T: Expr {}
-
-struct Literal {
-    value: Token,
-}
-
-impl Literal {
-    fn new(value: Token) -> Literal {
-        Literal { value }
-    }
-}
+expr!(Expr: Literal => value: Token);
 
 impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -141,32 +116,13 @@ impl fmt::Display for Literal {
     }
 }
 
-impl Expr for Literal {}
-
-struct Unary<T>
-where
-    T: Expr,
-{
-    op: Token,
-    right: T,
-}
-
-impl<T> Unary<T>
-where
-    T: Expr,
-{
-    fn new(op: Token, right: T) -> Unary<T> {
-        Unary { op, right }
-    }
-}
+expr!(Expr: Unary<T> => op: Token, right: T);
 
 impl<T> fmt::Display for Unary<T>
 where
     T: Expr,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}{}", self.op, self.right)
+        write!(f, "({} {})", self.op, self.right)
     }
 }
-
-impl<T> Expr for Unary<T> where T: Expr {}
