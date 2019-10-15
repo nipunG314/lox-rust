@@ -135,11 +135,16 @@ where
     }
 }
 
-expr!(Expr: Literal => value: Token);
+expr!(Expr: Literal => value: TokenType);
 
 impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.value.lexeme)
+        if let TokenType::Str(s) = &self.value {
+            return write!(f, "{}", s);
+        } else if let TokenType::Number(num) = &self.value {
+            return write!(f, "{}", num);
+        }
+        write!(f, "")
     }
 }
 
