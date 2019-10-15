@@ -69,6 +69,32 @@ pub struct NextTokenInfo(pub char, pub TokenType, pub TokenType);
 
 pub trait Expr: fmt::Display {}
 
+// Creates an generic Expression Type for a given set of fields
+//
+// The structs need to be generic since some of the
+// fields of certain Expression types are other
+// Expression types. In structs where multiple
+// Expression types are included as fields, each
+// must be provided a separate generic parameter when
+// expr!() is called.
+//
+// If an Expression type does not contain any other
+// Expression type as a field, the generic
+// parameters can be skipped.
+//
+// Parameters:
+//
+// $trt: The Expr trait which each new type must
+// implement
+//
+// $e: Identifier of the new struct
+//
+// $($T:ident),+: The sequence of generic
+// parameters that the struct accepts
+//
+// $($field:ident: $ty:ident),*: The sequence of
+// fields and their types that will populate the struct
+
 macro_rules! expr {
     ($trt:ident: $e:ident<$($T:ident),+> => $($field:ident: $ty:ident),*) => {
         pub struct $e<$($T: $trt,)+> {
