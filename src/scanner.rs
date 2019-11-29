@@ -1,5 +1,7 @@
-use crate::core::{NextTokenInfo, Token, TokenType};
-use crate::error;
+use crate::{
+    core::{NextTokenInfo, Token, TokenType},
+    error,
+};
 use std::iter::Peekable;
 use std::str::Chars;
 

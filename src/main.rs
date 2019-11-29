@@ -1,7 +1,9 @@
 mod core;
 pub mod error;
+pub mod parser;
 pub mod scanner;
 
+use crate::parser::Parser;
 use crate::scanner::Scanner;
 use std::env;
 use std::fs;
