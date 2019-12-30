@@ -35,5 +35,10 @@ fn run_prompt() {
 fn run_file(source: String) {
     let mut scanner = Scanner::new(&source);
     scanner.scan_tokens();
-    println!("{:#?}", scanner.get_tokens());
+
+    let mut parser = Parser::new(scanner.get_tokens());
+    match parser.parse() {
+        Ok(expr) => println!("{}", expr),
+        Err(_) => println!("ParseError found"),
+    };
 }
