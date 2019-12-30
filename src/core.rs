@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum TokenType {
     LeftParen,
     RightParen,
@@ -40,9 +40,10 @@ pub enum TokenType {
     True,
     Var,
     While,
+    EOF,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub lexeme: String,
@@ -68,6 +69,10 @@ impl fmt::Display for Token {
 pub struct NextTokenInfo(pub char, pub TokenType, pub TokenType);
 
 pub trait Expr: fmt::Display {}
+
+pub struct ParseError {}
+
+pub type ParseResult = Result<Box<dyn Expr>, ParseError>;
 
 // Creates an generic Expression Type for a given set of fields
 //
@@ -96,39 +101,55 @@ pub trait Expr: fmt::Display {}
 // fields and their types that will populate the struct
 
 macro_rules! expr {
-    ($trt:ident: $e:ident<$($T:ident),+> => $($field:ident: $ty:ident),*) => {
-        pub struct $e<$($T: $trt,)+> {
+    ($trt:ident: $e:ident<$($T:ident),+> => $($field:ident: $ty:ty),*) => {
+        pub struct $e<$($T: $trt + ?Sized,)+> {
             $(pub $field: $ty,)*
         }
 
-        impl<$($T,)+> $trt for $e<$($T,)+> where $($T: $trt,)+ {}
+        impl<$($T,)+> $e<$($T,)+> where $($T: $trt + ?Sized,)+ {
+            pub fn new($($field: $ty,)*) -> Self {
+                Self {
+                    $($field,)*
+                }
+            }
+        }
+
+        impl<$($T,)+> $trt for $e<$($T,)+> where $($T: $trt + ?Sized,)+ {}
     };
     ($trt:ident: $e:ident => $($field:ident: $ty:ident),*) => {
         pub struct $e {
             $(pub $field: $ty,)*
         }
 
+        impl $e {
+            pub fn new($($field: $ty,)*) -> Self {
+                Self {
+                    $($field,)*
+                }
+            }
+        }
+
         impl $trt for $e {}
     };
 }
 
-expr!(Expr: Binary<T, U> => left: T, op: Token, right: U);
+expr!(Expr: Binary<T, U> => left: Box<T>, op: Token, right: Box<U>);
 
 impl<T, U> fmt::Display for Binary<T, U>
 where
-    T: Expr,
-    U: Expr,
+    T: Expr + ?Sized,
+    U: Expr + ?Sized,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({} {} {})", self.op, self.left, self.right)
     }
 }
 
-expr!(Expr: Grouping<T> => expression: T);
+expr!(Expr: Grouping<T> => expression: Box<T>);
 
 impl<T> fmt::Display for Grouping<T>
 where
-    T: Expr,
+    T: Expr + ?Sized,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "(group {})", self.expression)
@@ -148,11 +169,11 @@ impl fmt::Display for Literal {
     }
 }
 
-expr!(Expr: Unary<T> => op: Token, right: T);
+expr!(Expr: Unary<T> => op: Token, right: Box<T>);
 
 impl<T> fmt::Display for Unary<T>
 where
-    T: Expr,
+    T: Expr + ?Sized,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({} {})", self.op, self.right)
