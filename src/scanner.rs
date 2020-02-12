@@ -115,23 +115,23 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token(&mut self, token_type: TokenType) {
+        let text;
         if let TokenType::Str(_) = token_type {
-            let text = self
+            text = self
                 .source
                 .chars()
                 .skip(self.start + 1)
                 .take((self.current - 1) - (self.start + 1))
                 .collect::<String>();
-            self.tokens.push(Token::new(token_type, text, self.line));
         } else {
-            let text = self
+            text = self
                 .source
                 .chars()
                 .skip(self.start)
                 .take(self.current - self.start)
                 .collect::<String>();
-            self.tokens.push(Token::new(token_type, text, self.line));
         }
+        self.tokens.push(Token::new(token_type, text, self.line));
     }
 
     fn add_next_token(&mut self, next_token: NextTokenInfo) {
