@@ -39,6 +39,7 @@ impl<'a> Scanner<'a> {
         &self.tokens
     }
 
+    // Matches the incoming characters with the corresponding Token
     fn scan_token(&mut self) {
         use TokenType::*;
 
@@ -134,6 +135,7 @@ impl<'a> Scanner<'a> {
         self.tokens.push(Token::new(token_type, text, self.line));
     }
 
+    // Adds a Token depending upon the next symbol
     fn add_next_token(&mut self, next_token: NextTokenInfo) {
         let NextTokenInfo(expected, token_type1, token_type2) = next_token;
         if let Some(true) = self.check_next_symbol(|c| c == expected) {

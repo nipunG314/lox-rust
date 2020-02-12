@@ -85,7 +85,9 @@ pub type ParseResult = Result<Box<dyn Expr>, ParseError>;
 //
 // If an Expression type does not contain any other
 // Expression type as a field, the generic
-// parameters can be skipped.
+// parameters can be skipped. In this case, the ?Sized trait
+// bound is not applied since the resulting expression
+// will not be recursive.
 //
 // Parameters:
 //
