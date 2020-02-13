@@ -40,6 +40,8 @@ impl<'a> Parser<'a> {
             expr = Box::new(Binary::new(expr, token, right_expr));
         }
 
+        self.check_unexpected_expr()?;
+
         Ok(expr)
     }
 
@@ -54,6 +56,8 @@ impl<'a> Parser<'a> {
             let right_expr = self.addition()?;
             expr = Box::new(Binary::new(expr, token, right_expr));
         }
+
+        self.check_unexpected_expr()?;
 
         Ok(expr)
     }
@@ -70,6 +74,8 @@ impl<'a> Parser<'a> {
             expr = Box::new(Binary::new(expr, token, right_expr));
         }
 
+        self.check_unexpected_expr()?;
+
         Ok(expr)
     }
 
@@ -84,6 +90,8 @@ impl<'a> Parser<'a> {
             let right_expr = self.unary()?;
             expr = Box::new(Binary::new(expr, token, right_expr));
         }
+
+        self.check_unexpected_expr()?;
 
         Ok(expr)
     }
@@ -134,6 +142,16 @@ impl<'a> Parser<'a> {
             }
         }
         None
+    }
+
+    fn check_unexpected_expr(&mut self) -> Result<(), ParseError> {
+        if let Some(token) = self.check_next_token(|token| match token.token_type {
+            True | False | Nil | Number(_) | Str(_) | LeftParen | Identifier => true,
+            _ => false,
+        }) {
+            return Err(Parser::error(token, "Unexpected Expression"));
+        }
+        Ok(())
     }
 
     fn advance(&mut self) -> Option<&Token> {
