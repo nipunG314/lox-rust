@@ -37,8 +37,7 @@ fn run_file(source: String) {
     scanner.scan_tokens();
 
     let mut parser = Parser::new(scanner.get_tokens());
-    match parser.parse() {
-        Ok(expr) => println!("{}", expr),
-        Err(_) => println!("ParseError found"),
-    };
+    if let Ok(expr) = parser.parse() {
+        println!("{}", expr);
+    }
 }

@@ -126,7 +126,7 @@ impl<'a> Parser<'a> {
         if let Some(token) = self.reader.peek() {
             return Err(Parser::error(token, "Expected expression."));
         }
-        Err(ParseError {})
+        return Err(Parser::error(&Token::empty(), "Expected expression."));
     }
 
     // Checks the next token and if it satisfies a closure, consumes it
@@ -175,7 +175,7 @@ impl<'a> Parser<'a> {
 
             Err(Parser::error(token, message))
         } else {
-            Err(ParseError {})
+            Err(Parser::error(&Token::empty(), "Expected expression."))
         }
     }
 }

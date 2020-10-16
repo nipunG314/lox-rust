@@ -58,6 +58,14 @@ impl Token {
             line,
         }
     }
+
+    pub fn empty() -> Token {
+        Token {
+            token_type: TokenType::EOF,
+            lexeme: String::new(),
+            line: 0,
+        }
+    }
 }
 
 impl fmt::Display for Token {
