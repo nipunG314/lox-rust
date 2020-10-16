@@ -78,8 +78,10 @@ pub struct NextTokenInfo(pub char, pub TokenType, pub TokenType);
 
 pub trait Expr: fmt::Display {}
 
+pub struct SyntaxError {}
 pub struct ParseError {}
 
+pub type SyntaxResult = Result<(), SyntaxError>;
 pub type ParseResult = Result<Box<dyn Expr>, ParseError>;
 
 // Creates an generic Expression Type for a given set of fields

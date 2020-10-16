@@ -1,5 +1,5 @@
 use crate::{
-    core::{NextTokenInfo, Token, TokenType},
+    core::{NextTokenInfo, SyntaxError, SyntaxResult, Token, TokenType},
     error,
 };
 use std::iter::Peekable;
@@ -28,11 +28,13 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    pub fn scan_tokens(&mut self) {
+    pub fn scan_tokens(&mut self) -> SyntaxResult {
         while let Some(_) = self.reader.peek() {
             self.start = self.current;
-            self.scan_token();
+            self.scan_token()?;
         }
+
+        Ok(())
     }
 
     pub fn get_tokens(&self) -> &Vec<Token> {
@@ -40,7 +42,7 @@ impl<'a> Scanner<'a> {
     }
 
     // Matches the incoming characters with the corresponding Token
-    fn scan_token(&mut self) {
+    fn scan_token(&mut self) -> SyntaxResult {
         use TokenType::*;
 
         match self.advance().unwrap() {
@@ -59,7 +61,10 @@ impl<'a> Scanner<'a> {
             '<' => self.add_next_token(NextTokenInfo('=', LessEqual, Less)),
             '>' => self.add_next_token(NextTokenInfo('=', GreaterEqual, Greater)),
             '/' => match self.check_next_symbol(|c| c == '/') {
-                None => error::error(self.line, "Unexpected EOF"),
+                None => {
+                    error::error(self.line, "Unexpected EOF");
+                    return Err(SyntaxError {});
+                }
                 Some(false) => self.add_token(Slash),
                 Some(true) => {
                     while let Some(false) = self.check_next_symbol(|c| c == '\n') {
@@ -74,14 +79,14 @@ impl<'a> Scanner<'a> {
             }
             '"' => {
                 let new_string = self.make_string();
-                if let Some(s) = new_string {
+                if let Ok(s) = new_string {
                     self.add_token(s);
                 }
             }
             c => {
                 if c.is_digit(10) {
                     let new_number = self.make_number();
-                    if let Some(num) = new_number {
+                    if let Ok(num) = new_number {
                         self.add_token(num);
                     }
                 } else if c.is_alphabetic() || c == '_' {
@@ -89,9 +94,12 @@ impl<'a> Scanner<'a> {
                     self.add_token(new_id);
                 } else {
                     error::error(self.line, "Unexpected character.");
+                    return Err(SyntaxError {});
                 }
             }
         }
+
+        Ok(())
     }
 
     fn advance(&mut self) -> Option<char> {
@@ -145,12 +153,12 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    fn make_string(&mut self) -> Option<TokenType> {
+    fn make_string(&mut self) -> Result<TokenType, SyntaxError> {
         loop {
             match self.check_next_symbol(|c| c == '"') {
                 None => {
                     error::error(self.line, "Unterminated string.");
-                    return None;
+                    return Err(SyntaxError {});
                 }
                 Some(false) => {
                     if let Some(true) = self.check_next_symbol(|c| c == '\n') {
@@ -171,17 +179,17 @@ impl<'a> Scanner<'a> {
             .take((self.current - 1) - (self.start + 1))
             .collect::<String>();
 
-        Some(TokenType::Str(literal_value))
+        Ok(TokenType::Str(literal_value))
     }
 
-    fn make_number(&mut self) -> Option<TokenType> {
+    fn make_number(&mut self) -> Result<TokenType, SyntaxError> {
         loop {
             match self.check_next_symbol(|c| c.is_digit(10)) {
                 Some(false) => {
                     if let Some(true) = self.check_next_symbol(|c| c == '.') {
                         if let Some(false) | None = self.check_next_symbol(|c| c.is_digit(10)) {
                             error::error(self.line, "Number cannot end with '.' operator");
-                            return None;
+                            return Err(SyntaxError {});
                         }
                         while let Some(true) = self.check_next_symbol(|c| c.is_digit(10)) {}
                     }
@@ -205,7 +213,7 @@ impl<'a> Scanner<'a> {
 
         let literal_value: f64 = literal_value.parse().unwrap();
 
-        Some(TokenType::Number(literal_value))
+        Ok(TokenType::Number(literal_value))
     }
 
     fn make_identifier(&mut self) -> TokenType {

@@ -8,6 +8,7 @@ use crate::scanner::Scanner;
 use std::env;
 use std::fs;
 use std::io::ErrorKind;
+use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -34,7 +35,10 @@ fn run_prompt() {
 
 fn run_file(source: String) {
     let mut scanner = Scanner::new(&source);
-    scanner.scan_tokens();
+
+    if let Err(_) = scanner.scan_tokens() {
+        process::exit(1);
+    }
 
     let mut parser = Parser::new(scanner.get_tokens());
     if let Ok(expr) = parser.parse() {
