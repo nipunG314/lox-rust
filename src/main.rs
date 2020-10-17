@@ -42,6 +42,9 @@ fn run_file(source: String) {
 
     let mut parser = Parser::new(scanner.get_tokens());
     if let Ok(expr) = parser.parse() {
-        println!("{}", expr);
+        match expr.interpret() {
+            Ok(object) => println!("{:#?}", object.downcast::<f64>().unwrap()),
+            Err(error) => println!("{:#?}", error.0),
+        }
     }
 }
